@@ -68,7 +68,7 @@ namespace ExamenFinalProgramacionWeb2.Controllers
             context.Pago.Add(entidad);
             await context.SaveChangesAsync();
 
-            return CreatedAtAction("Get", new { mensaje = "pago creado exitosamente" });
+            return CreatedAtAction("GetCredito", new { Codigo = entidad.Codigo }, entidad.ToDto());
         }
 
         [HttpPut("{codigo}")]

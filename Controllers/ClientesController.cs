@@ -96,7 +96,7 @@ namespace ExamenFinalProgramacionWeb2.Controllers
             context.Cliente.Add(cliente);
             await context.SaveChangesAsync();
 
-            return CreatedAtAction("GetCliente", new { mensaje = "cliente creado exitosamente" });
+            return CreatedAtAction("GetCredito", new { ci = cliente.Ci }, cliente.ToDto());
         }
 
         [HttpDelete("{ci}")]

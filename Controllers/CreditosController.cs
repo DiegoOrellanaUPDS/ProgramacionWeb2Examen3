@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using ExamenFinalProgramacionWeb2.Core.DTOs;
+using ExamenFinalProgramacionWeb2.Core.Entidades;
+using ExamenFinalProgramacionWeb2.Core.Mapeador;
+using ExamenFinalProgramacionWeb2.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ExamenFinalProgramacionWeb2.Core.Entidades;
-using ExamenFinalProgramacionWeb2.Data;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ExamenFinalProgramacionWeb2.Controllers
 {
@@ -14,95 +16,84 @@ namespace ExamenFinalProgramacionWeb2.Controllers
     [ApiController]
     public class CreditosController : ControllerBase
     {
-        private readonly ExamenFinalProgramacionWeb2Context _context;
+        private readonly ExamenFinalProgramacionWeb2Context context;
 
         public CreditosController(ExamenFinalProgramacionWeb2Context context)
         {
-            _context = context;
+            this.context = context;
         }
 
-        // GET: api/Creditos
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Credito>>> GetCredito()
+        [HttpGet("Listar")]
+        public async Task<IActionResult> GetCreditos()
         {
-            return await _context.Credito.ToListAsync();
+            return Ok(await (from c in context.Credito
+                             where c.Estado != "Borrado"
+                             select c.ToDto()).ToListAsync());
         }
 
-        // GET: api/Creditos/5
+        [HttpGet("ListarBorrados")]
+        public async Task<IActionResult> GetCreditosBorrados()
+        {
+            return Ok(await (from c in context.Credito
+                             where c.Estado == "Borrado"
+                             select c.ToDto()).ToListAsync());
+        }
+
         [HttpGet("{id}")]
-        public async Task<ActionResult<Credito>> GetCredito(int id)
+        public async Task<IActionResult> GetCredito(int id)
         {
-            var credito = await _context.Credito.FindAsync(id);
+            var credito = await (from c in context.Credito
+                                 where c.Id == id && c.Estado != "Borrado"
+                                 select c.ToDto()).FirstOrDefaultAsync();
 
-            if (credito == null)
-            {
-                return NotFound();
-            }
-
-            return credito;
+            if (credito == null) return NotFound();
+            return Ok(credito);
         }
 
-        // PUT: api/Creditos/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutCredito(int id, Credito credito)
+        [HttpPost("crear")]
+        public async Task<IActionResult> PostCredito(CreditoDto dto)
         {
-            if (id != credito.Id)
+            var credito = new Credito
             {
-                return BadRequest();
-            }
+                Codigo = dto.Codigo,
+                ClienteCi = dto.ClienteCi,
+                LimiteCredito = dto.LimiteCredito,
+                SaldoUsado = dto.SaldoUsado,
+                Estado = "Activo"
+            };
 
-            _context.Entry(credito).State = EntityState.Modified;
+            context.Credito.Add(credito);
+            await context.SaveChangesAsync();
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CreditoExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            return CreatedAtAction("GetCredito", new { ci = credito.Codigo }, credito.ToDto());
+        }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutCredito(int id, CreditoDto dto)
+        {
+            var credito = await context.Credito.FirstOrDefaultAsync(x => x.Id == id);
+            if (credito == null) return NotFound();
+
+            credito.Codigo = dto.Codigo;
+            credito.ClienteCi = dto.ClienteCi;
+            credito.LimiteCredito = dto.LimiteCredito;
+            credito.SaldoUsado = dto.SaldoUsado;
+
+            await context.SaveChangesAsync();
             return NoContent();
         }
 
-        // POST: api/Creditos
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Credito>> PostCredito(Credito credito)
-        {
-            _context.Credito.Add(credito);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetCredito", new { id = credito.Id }, credito);
-        }
-
-        // DELETE: api/Creditos/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCredito(int id)
         {
-            var credito = await _context.Credito.FindAsync(id);
-            if (credito == null)
-            {
-                return NotFound();
-            }
+            var credito = await context.Credito.FirstOrDefaultAsync(x => x.Id == id);
+            if (credito == null) return NotFound();
 
-            _context.Credito.Remove(credito);
-            await _context.SaveChangesAsync();
+            credito.Estado = "Borrado";
+            await context.SaveChangesAsync();
 
             return NoContent();
         }
-
-        private bool CreditoExists(int id)
-        {
-            return _context.Credito.Any(e => e.Id == id);
-        }
     }
+
 }

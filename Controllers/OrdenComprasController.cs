@@ -70,7 +70,7 @@ namespace ExamenFinalProgramacionWeb2.Controllers
             context.OrdenCompra.Add(entidad);
             await context.SaveChangesAsync();
 
-            return CreatedAtAction("Get", new { mensaje = "orden creada exitosamente" });
+            return CreatedAtAction("GetCredito", new { Codigo = entidad.Codigo }, entidad.ToDto());
         }
 
         [HttpPut("{codigo}")]

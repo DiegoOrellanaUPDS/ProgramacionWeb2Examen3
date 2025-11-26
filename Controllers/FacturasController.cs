@@ -69,7 +69,7 @@ namespace ExamenFinalProgramacionWeb2.Controllers
             context.Factura.Add(entidad);
             await context.SaveChangesAsync();
 
-            return CreatedAtAction("Get", new { mensaje = "factura creada exitosamente" });
+            return CreatedAtAction("GetCredito", new { codigo = entidad.Codigo}, entidad.ToDto());
         }
 
         [HttpPut("{codigo}")]
