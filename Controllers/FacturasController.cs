@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ExamenFinalProgramacionWeb2.Core.Entidades;
 using ExamenFinalProgramacionWeb2.Data;
+using ExamenFinalProgramacionWeb2.Core.DTOs;
+using ExamenFinalProgramacionWeb2.Core.Mapeador;
 
 namespace ExamenFinalProgramacionWeb2.Controllers
 {
@@ -14,95 +16,85 @@ namespace ExamenFinalProgramacionWeb2.Controllers
     [ApiController]
     public class FacturasController : ControllerBase
     {
-        private readonly ExamenFinalProgramacionWeb2Context _context;
+        private readonly ExamenFinalProgramacionWeb2Context context;
 
         public FacturasController(ExamenFinalProgramacionWeb2Context context)
         {
-            _context = context;
+            this.context = context;
         }
 
-        // GET: api/Facturas
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Factura>>> GetFactura()
+        [HttpGet("Listar")]
+        public async Task<IActionResult> Listar()
         {
-            return await _context.Factura.ToListAsync();
+            return Ok(await (from f in context.Factura
+                             where f.Estado != "Borrado"
+                             select f.ToDto()).ToListAsync());
         }
 
-        // GET: api/Facturas/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Factura>> GetFactura(int id)
+        [HttpGet("ListarBorrados")]
+        public async Task<IActionResult> ListarBorrados()
         {
-            var factura = await _context.Factura.FindAsync(id);
-
-            if (factura == null)
-            {
-                return NotFound();
-            }
-
-            return factura;
+            return Ok(await (from f in context.Factura
+                             where f.Estado == "Borrado"
+                             select f.ToDto()).ToListAsync());
         }
 
-        // PUT: api/Facturas/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutFactura(int id, Factura factura)
+        [HttpGet("{codigo}")]
+        public async Task<IActionResult> Get(int codigo)
         {
-            if (id != factura.Id)
-            {
-                return BadRequest();
-            }
+            var factura = await (from f in context.Factura
+                                 where f.Codigo == codigo && f.Estado != "Borrado"
+                                 select f.ToDto()).FirstOrDefaultAsync();
 
-            _context.Entry(factura).State = EntityState.Modified;
+            if (factura == null) return NotFound();
+            return Ok(factura);
+        }
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!FacturaExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+        [HttpPost("crear")]
+        public async Task<IActionResult> Crear(FacturaDto dto)
+        {
+            var existe = await context.Factura.FirstOrDefaultAsync(x => x.Codigo == dto.Codigo);
+            if (existe != null) return BadRequest("La factura ya existe.");
 
+            var entidad = new Factura
+            {
+                Codigo = dto.Codigo,
+                ClienteCi = dto.ClienteCi,
+                Fecha = dto.Fecha,
+                MontoTotal = dto.MontoTotal,
+                Pagada = dto.Pagada,
+                Estado = "Activo"
+            };
+
+            context.Factura.Add(entidad);
+            await context.SaveChangesAsync();
+
+            return CreatedAtAction("Get", new { mensaje = "factura creada exitosamente" });
+        }
+
+        [HttpPut("{codigo}")]
+        public async Task<IActionResult> Actualizar(int codigo, FacturaDto dto)
+        {
+            var factura = await context.Factura.FirstOrDefaultAsync(x => x.Codigo == codigo && x.Estado != "Borrado");
+            if (factura == null) return NotFound();
+
+            factura.MontoTotal = dto.MontoTotal;
+            factura.Pagada = dto.Pagada;
+
+            await context.SaveChangesAsync();
             return NoContent();
         }
 
-        // POST: api/Facturas
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Factura>> PostFactura(Factura factura)
+        [HttpDelete("{codigo}")]
+        public async Task<IActionResult> Borrar(int codigo)
         {
-            _context.Factura.Add(factura);
-            await _context.SaveChangesAsync();
+            var factura = await context.Factura.FirstOrDefaultAsync(x => x.Codigo == codigo);
+            if (factura == null) return NotFound();
 
-            return CreatedAtAction("GetFactura", new { id = factura.Id }, factura);
-        }
-
-        // DELETE: api/Facturas/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteFactura(int id)
-        {
-            var factura = await _context.Factura.FindAsync(id);
-            if (factura == null)
-            {
-                return NotFound();
-            }
-
-            _context.Factura.Remove(factura);
-            await _context.SaveChangesAsync();
-
+            factura.Estado = "Borrado";
+            await context.SaveChangesAsync();
             return NoContent();
-        }
-
-        private bool FacturaExists(int id)
-        {
-            return _context.Factura.Any(e => e.Id == id);
         }
     }
+
 }

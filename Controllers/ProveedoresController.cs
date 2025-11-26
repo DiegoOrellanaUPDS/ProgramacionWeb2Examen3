@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using ExamenFinalProgramacionWeb2.Core.DTOs;
+using ExamenFinalProgramacionWeb2.Core.Entidades;
+using ExamenFinalProgramacionWeb2.Core.Mapeador;
+using ExamenFinalProgramacionWeb2.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ExamenFinalProgramacionWeb2.Core.Entidades;
-using ExamenFinalProgramacionWeb2.Data;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ExamenFinalProgramacionWeb2.Controllers
 {
@@ -14,95 +16,87 @@ namespace ExamenFinalProgramacionWeb2.Controllers
     [ApiController]
     public class ProveedoresController : ControllerBase
     {
-        private readonly ExamenFinalProgramacionWeb2Context _context;
+        private readonly ExamenFinalProgramacionWeb2Context context;
 
         public ProveedoresController(ExamenFinalProgramacionWeb2Context context)
         {
-            _context = context;
+            this.context = context;
         }
 
-        // GET: api/Proveedores
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Proveedor>>> GetProveedor()
+        [HttpGet("Listar")]
+        public async Task<IActionResult> Listar()
         {
-            return await _context.Proveedor.ToListAsync();
+            return Ok(await (from p in context.Proveedor
+                             where p.Estado != "Borrado"
+                             select p.ToDto()).ToListAsync());
         }
 
-        // GET: api/Proveedores/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Proveedor>> GetProveedor(int id)
+        [HttpGet("ListarBorrados")]
+        public async Task<IActionResult> ListarBorrados()
         {
-            var proveedor = await _context.Proveedor.FindAsync(id);
-
-            if (proveedor == null)
-            {
-                return NotFound();
-            }
-
-            return proveedor;
+            return Ok(await (from p in context.Proveedor
+                             where p.Estado == "Borrado"
+                             select p.ToDto()).ToListAsync());
         }
 
-        // PUT: api/Proveedores/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutProveedor(int id, Proveedor proveedor)
+        [HttpGet("{codigo}")]
+        public async Task<IActionResult> Get(int codigo)
         {
-            if (id != proveedor.Id)
-            {
-                return BadRequest();
-            }
+            var prov = await (from p in context.Proveedor
+                              where p.Codigo == codigo && p.Estado != "Borrado"
+                              select p.ToDto()).FirstOrDefaultAsync();
 
-            _context.Entry(proveedor).State = EntityState.Modified;
+            if (prov == null) return NotFound();
+            return Ok(prov);
+        }
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ProveedorExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+        [HttpPost("crear")]
+        public async Task<IActionResult> Crear(ProveedorDto dto)
+        {
+            var existe = await context.Proveedor.FirstOrDefaultAsync(x => x.Codigo == dto.Codigo);
+            if (existe != null) return BadRequest("El proveedor ya existe.");
 
+            var entidad = new Proveedor
+            {
+                Codigo = dto.Codigo,
+                Nombre = dto.Nombre,
+                Categoria = dto.Categoria,
+                Calificacion = dto.Calificacion,
+                Estado = "Activo"
+            };
+
+            context.Proveedor.Add(entidad);
+            await context.SaveChangesAsync();
+
+            return CreatedAtAction("Get", new { mensaje = "proveedor creado exitosamente" });
+        }
+
+        [HttpPut("{codigo}")]
+        public async Task<IActionResult> Actualizar(int codigo, ProveedorDto dto)
+        {
+            var prov = await context.Proveedor.FirstOrDefaultAsync(x => x.Codigo == codigo && x.Estado != "Borrado");
+            if (prov == null) return NotFound();
+
+            prov.Nombre = dto.Nombre;
+            prov.Categoria = dto.Categoria;
+            prov.Calificacion = dto.Calificacion;
+
+            await context.SaveChangesAsync();
             return NoContent();
         }
 
-        // POST: api/Proveedores
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Proveedor>> PostProveedor(Proveedor proveedor)
+        [HttpDelete("{codigo}")]
+        public async Task<IActionResult> Borrar(int codigo)
         {
-            _context.Proveedor.Add(proveedor);
-            await _context.SaveChangesAsync();
+            var prov = await context.Proveedor.FirstOrDefaultAsync(x => x.Codigo == codigo);
+            if (prov == null) return NotFound();
 
-            return CreatedAtAction("GetProveedor", new { id = proveedor.Id }, proveedor);
-        }
-
-        // DELETE: api/Proveedores/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProveedor(int id)
-        {
-            var proveedor = await _context.Proveedor.FindAsync(id);
-            if (proveedor == null)
-            {
-                return NotFound();
-            }
-
-            _context.Proveedor.Remove(proveedor);
-            await _context.SaveChangesAsync();
-
+            prov.Estado = "Borrado";
+            await context.SaveChangesAsync();
             return NoContent();
-        }
-
-        private bool ProveedorExists(int id)
-        {
-            return _context.Proveedor.Any(e => e.Id == id);
         }
     }
+
+
+
 }

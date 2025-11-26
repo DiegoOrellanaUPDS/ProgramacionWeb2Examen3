@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using ExamenFinalProgramacionWeb2.Core.DTOs;
+using ExamenFinalProgramacionWeb2.Core.Entidades;
+using ExamenFinalProgramacionWeb2.Core.Mapeador;
+using ExamenFinalProgramacionWeb2.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ExamenFinalProgramacionWeb2.Core.Entidades;
-using ExamenFinalProgramacionWeb2.Data;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ExamenFinalProgramacionWeb2.Controllers
 {
@@ -14,95 +16,83 @@ namespace ExamenFinalProgramacionWeb2.Controllers
     [ApiController]
     public class PagosController : ControllerBase
     {
-        private readonly ExamenFinalProgramacionWeb2Context _context;
+        private readonly ExamenFinalProgramacionWeb2Context context;
 
         public PagosController(ExamenFinalProgramacionWeb2Context context)
         {
-            _context = context;
+            this.context = context;
         }
 
-        // GET: api/Pagos
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Pago>>> GetPago()
+        [HttpGet("Listar")]
+        public async Task<IActionResult> Listar()
         {
-            return await _context.Pago.ToListAsync();
+            return Ok(await (from p in context.Pago
+                             where p.Estado != "Borrado"
+                             select p.ToDto()).ToListAsync());
         }
 
-        // GET: api/Pagos/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Pago>> GetPago(int id)
+        [HttpGet("ListarBorrados")]
+        public async Task<IActionResult> ListarBorrados()
         {
-            var pago = await _context.Pago.FindAsync(id);
-
-            if (pago == null)
-            {
-                return NotFound();
-            }
-
-            return pago;
+            return Ok(await (from p in context.Pago
+                             where p.Estado == "Borrado"
+                             select p.ToDto()).ToListAsync());
         }
 
-        // PUT: api/Pagos/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutPago(int id, Pago pago)
+        [HttpGet("{codigo}")]
+        public async Task<IActionResult> Get(int codigo)
         {
-            if (id != pago.Id)
-            {
-                return BadRequest();
-            }
+            var pago = await (from p in context.Pago
+                              where p.Codigo == codigo && p.Estado != "Borrado"
+                              select p.ToDto()).FirstOrDefaultAsync();
 
-            _context.Entry(pago).State = EntityState.Modified;
+            if (pago == null) return NotFound();
+            return Ok(pago);
+        }
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!PagoExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+        [HttpPost("crear")]
+        public async Task<IActionResult> Crear(PagoDto dto)
+        {
+            var existe = await context.Pago.FirstOrDefaultAsync(x => x.Codigo == dto.Codigo);
+            if (existe != null) return BadRequest("El pago ya existe.");
 
+            var entidad = new Pago
+            {
+                Codigo = dto.Codigo,
+                FacturaCodigo = dto.FacturaCodigo,
+                FechaPago = dto.FechaPago,
+                MontoPagado = dto.MontoPagado,
+                Estado = "Activo"
+            };
+
+            context.Pago.Add(entidad);
+            await context.SaveChangesAsync();
+
+            return CreatedAtAction("Get", new { mensaje = "pago creado exitosamente" });
+        }
+
+        [HttpPut("{codigo}")]
+        public async Task<IActionResult> Actualizar(int codigo, PagoDto dto)
+        {
+            var pago = await context.Pago.FirstOrDefaultAsync(x => x.Codigo == codigo && x.Estado != "Borrado");
+            if (pago == null) return NotFound();
+
+            pago.MontoPagado = dto.MontoPagado;
+
+            await context.SaveChangesAsync();
             return NoContent();
         }
 
-        // POST: api/Pagos
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Pago>> PostPago(Pago pago)
+        [HttpDelete("{codigo}")]
+        public async Task<IActionResult> Borrar(int codigo)
         {
-            _context.Pago.Add(pago);
-            await _context.SaveChangesAsync();
+            var pago = await context.Pago.FirstOrDefaultAsync(x => x.Codigo == codigo);
+            if (pago == null) return NotFound();
 
-            return CreatedAtAction("GetPago", new { id = pago.Id }, pago);
-        }
-
-        // DELETE: api/Pagos/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePago(int id)
-        {
-            var pago = await _context.Pago.FindAsync(id);
-            if (pago == null)
-            {
-                return NotFound();
-            }
-
-            _context.Pago.Remove(pago);
-            await _context.SaveChangesAsync();
-
+            pago.Estado = "Borrado";
+            await context.SaveChangesAsync();
             return NoContent();
-        }
-
-        private bool PagoExists(int id)
-        {
-            return _context.Pago.Any(e => e.Id == id);
         }
     }
+
 }

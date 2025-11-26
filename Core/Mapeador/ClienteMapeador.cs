@@ -14,5 +14,15 @@ namespace ExamenFinalProgramacionWeb2.Core.Mapeador
                 Categoria = cliente.Categoria
             };
         }
+        public static Cliente ToEntidad(this ClienteDto clientedto)
+        {
+            return new Cliente
+            {
+                Ci = clientedto.Ci,
+                Nombre = clientedto.Nombre,
+                Categoria = clientedto.Categoria,
+                Estado = "Activo"
+            };
+        }
     }
 }

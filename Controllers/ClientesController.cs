@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using ExamenFinalProgramacionWeb2.Core.DTOs;
+using ExamenFinalProgramacionWeb2.Core.Entidades;
+using ExamenFinalProgramacionWeb2.Core.Mapeador;
+using ExamenFinalProgramacionWeb2.Data;
+using Humanizer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ExamenFinalProgramacionWeb2.Core.Entidades;
-using ExamenFinalProgramacionWeb2.Data;
-using ExamenFinalProgramacionWeb2.Core.DTOs;
-using ExamenFinalProgramacionWeb2.Core.Mapeador;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ExamenFinalProgramacionWeb2.Controllers
 {
@@ -39,11 +40,11 @@ namespace ExamenFinalProgramacionWeb2.Controllers
                              select c.ToDto()).ToListAsync());
         }
         // GET: api/Clientes/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetCliente(int ci)
+        [HttpGet("{ci}")]
+        public async Task<IActionResult> GetCliente(string ci)
         {
             var cliente = await (from c in context.Cliente
-                                 where c.Estado != "Borrado"
+                                 where c.Estado != "Borrado" && c.Ci == ci
                                  select c.ToDto()).FirstOrDefaultAsync();
 
             if (cliente == null)
@@ -56,41 +57,40 @@ namespace ExamenFinalProgramacionWeb2.Controllers
 
         // PUT: api/Clientes/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutCliente(int id, ClienteDto clientedto)
+        [HttpPut("{ci}")]
+        public async Task<IActionResult> PutCliente(string ci, ClienteDto dto)
         {
             var cliente = await (from c in context.Cliente
-                                 where c.Ci == clientedto.Ci
+                                 where c.Ci == ci && c.Estado != "Borrado"
                                  select c).FirstOrDefaultAsync();
             if (cliente == null)
-            {
-                return BadRequest();
-            }
+                return NotFound("No existe el cliente.");
 
-            context.Entry(cliente).State = EntityState.Modified;
+            // Actualizás SOLO lo editable
+            cliente.Nombre = dto.Nombre;
+            cliente.Categoria = dto.Categoria;
 
-            try
-            {
-                await context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return NotFound();
-            }
-
+            await context.SaveChangesAsync();
             return NoContent();
         }
 
         // POST: api/Clientes
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost("crear")]
-        public async Task<IActionResult> PostCliente(ClienteDto clientedto)
+        public async Task<IActionResult> PostCliente(ClienteDto dto)
         {
+            var clienteaux = await (from c in context.Cliente
+                                 where c.Ci == dto.Ci
+                                 select c).FirstOrDefaultAsync();
+            if (clienteaux != null)
+            {
+                return BadRequest("El cliente con la CI proporcionada ya existe.");
+            }
             var cliente = new Cliente
             {
-                Ci = clientedto.Ci,
-                Nombre = clientedto.Nombre,
-                Categoria = clientedto.Categoria,
+                Ci = dto.Ci,
+                Nombre = dto.Nombre,
+                Categoria = dto.Categoria,
                 Estado = "Activo"
             };
             context.Cliente.Add(cliente);
@@ -99,7 +99,7 @@ namespace ExamenFinalProgramacionWeb2.Controllers
             return CreatedAtAction("GetCliente", new { mensaje = "cliente creado exitosamente" });
         }
 
-        [HttpDelete("{Ci}")]
+        [HttpDelete("{ci}")]
         public async Task<IActionResult> DeleteCliente(string ci)
         {
             var cliente = await (from c in context.Cliente

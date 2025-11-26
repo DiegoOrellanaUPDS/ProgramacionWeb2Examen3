@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using ExamenFinalProgramacionWeb2.Core.DTOs;
+using ExamenFinalProgramacionWeb2.Core.Entidades;
+using ExamenFinalProgramacionWeb2.Core.Mapeador;
+using ExamenFinalProgramacionWeb2.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ExamenFinalProgramacionWeb2.Core.Entidades;
-using ExamenFinalProgramacionWeb2.Data;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ExamenFinalProgramacionWeb2.Controllers
 {
@@ -14,95 +16,87 @@ namespace ExamenFinalProgramacionWeb2.Controllers
     [ApiController]
     public class OrdenComprasController : ControllerBase
     {
-        private readonly ExamenFinalProgramacionWeb2Context _context;
+        private readonly ExamenFinalProgramacionWeb2Context context;
 
         public OrdenComprasController(ExamenFinalProgramacionWeb2Context context)
         {
-            _context = context;
+            this.context = context;
         }
 
-        // GET: api/OrdenCompras
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<OrdenCompra>>> GetOrdenCompra()
+        [HttpGet("Listar")]
+        public async Task<IActionResult> Listar()
         {
-            return await _context.OrdenCompra.ToListAsync();
+            return Ok(await (from o in context.OrdenCompra
+                             where o.Estado != "Borrado"
+                             select o.ToDto()).ToListAsync());
         }
 
-        // GET: api/OrdenCompras/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<OrdenCompra>> GetOrdenCompra(int id)
+        [HttpGet("ListarBorrados")]
+        public async Task<IActionResult> ListarBorrados()
         {
-            var ordenCompra = await _context.OrdenCompra.FindAsync(id);
-
-            if (ordenCompra == null)
-            {
-                return NotFound();
-            }
-
-            return ordenCompra;
+            return Ok(await (from o in context.OrdenCompra
+                             where o.Estado == "Borrado"
+                             select o.ToDto()).ToListAsync());
         }
 
-        // PUT: api/OrdenCompras/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutOrdenCompra(int id, OrdenCompra ordenCompra)
+        [HttpGet("{codigo}")]
+        public async Task<IActionResult> Get(int codigo)
         {
-            if (id != ordenCompra.Id)
-            {
-                return BadRequest();
-            }
+            var orden = await (from o in context.OrdenCompra
+                               where o.Codigo == codigo && o.Estado != "Borrado"
+                               select o.ToDto()).FirstOrDefaultAsync();
 
-            _context.Entry(ordenCompra).State = EntityState.Modified;
+            if (orden == null) return NotFound();
+            return Ok(orden);
+        }
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!OrdenCompraExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+        [HttpPost("crear")]
+        public async Task<IActionResult> Crear(OrdenCompraDto dto)
+        {
+            var existe = await context.OrdenCompra.FirstOrDefaultAsync(x => x.Codigo == dto.Codigo);
+            if (existe != null) return BadRequest("La orden ya existe.");
 
+            var entidad = new OrdenCompra
+            {
+                Codigo = dto.Codigo,
+                ProveedorCodigo = dto.ProveedorCodigo,
+                Fecha = dto.Fecha,
+                Producto = dto.Producto,
+                Cantidad = dto.Cantidad,
+                CostoTotal = dto.CostoTotal,
+                Estado = "Activo"
+            };
+
+            context.OrdenCompra.Add(entidad);
+            await context.SaveChangesAsync();
+
+            return CreatedAtAction("Get", new { mensaje = "orden creada exitosamente" });
+        }
+
+        [HttpPut("{codigo}")]
+        public async Task<IActionResult> Actualizar(int codigo, OrdenCompraDto dto)
+        {
+            var orden = await context.OrdenCompra.FirstOrDefaultAsync(x => x.Codigo == codigo && x.Estado != "Borrado");
+            if (orden == null) return NotFound();
+
+            orden.Producto = dto.Producto;
+            orden.Cantidad = dto.Cantidad;
+            orden.CostoTotal = dto.CostoTotal;
+
+            await context.SaveChangesAsync();
             return NoContent();
         }
 
-        // POST: api/OrdenCompras
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<OrdenCompra>> PostOrdenCompra(OrdenCompra ordenCompra)
+        [HttpDelete("{codigo}")]
+        public async Task<IActionResult> Borrar(int codigo)
         {
-            _context.OrdenCompra.Add(ordenCompra);
-            await _context.SaveChangesAsync();
+            var orden = await context.OrdenCompra.FirstOrDefaultAsync(x => x.Codigo == codigo);
+            if (orden == null) return NotFound();
 
-            return CreatedAtAction("GetOrdenCompra", new { id = ordenCompra.Id }, ordenCompra);
-        }
-
-        // DELETE: api/OrdenCompras/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteOrdenCompra(int id)
-        {
-            var ordenCompra = await _context.OrdenCompra.FindAsync(id);
-            if (ordenCompra == null)
-            {
-                return NotFound();
-            }
-
-            _context.OrdenCompra.Remove(ordenCompra);
-            await _context.SaveChangesAsync();
-
+            orden.Estado = "Borrado";
+            await context.SaveChangesAsync();
             return NoContent();
-        }
-
-        private bool OrdenCompraExists(int id)
-        {
-            return _context.OrdenCompra.Any(e => e.Id == id);
         }
     }
+
 }
