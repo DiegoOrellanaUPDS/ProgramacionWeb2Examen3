@@ -8,6 +8,7 @@ var url = Environment.GetEnvironmentVariable("DATABASE");
 builder.Services.AddDbContext<ExamenFinalProgramacionWeb2Context>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString(url)));
 
+
 // Add services to the container.
 builder.WebHost.UseUrls("http://0.0.0.0:8080");
 builder.Services.AddControllers();
