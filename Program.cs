@@ -6,8 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 var url = Environment.GetEnvironmentVariable("DATABASE");
 
 builder.Services.AddDbContext<ExamenFinalProgramacionWeb2Context>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString(url)));
-
+    options.UseNpgsql(url));
+Console.WriteLine($"la cadena es : {url}");
 
 // Add services to the container.
 builder.WebHost.UseUrls("http://0.0.0.0:8080");
@@ -25,11 +25,10 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 app.UseHttpsRedirection();
 
