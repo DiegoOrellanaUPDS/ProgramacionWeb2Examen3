@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ExamenFinalProgramacionWeb2.Migrations
 {
     [DbContext(typeof(ExamenFinalProgramacionWeb2Context))]
-    [Migration("20251125224931_m1")]
+    [Migration("20251126045514_m1")]
     partial class m1
     {
         /// <inheritdoc />
@@ -25,7 +25,7 @@ namespace ExamenFinalProgramacionWeb2.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("ExamenFinalProgramacionWeb2.Entidades.Cliente", b =>
+            modelBuilder.Entity("ExamenFinalProgramacionWeb2.Core.Entidades.Cliente", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -33,11 +33,11 @@ namespace ExamenFinalProgramacionWeb2.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("CI")
+                    b.Property<string>("Categoria")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Categoria")
+                    b.Property<string>("Ci")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -54,7 +54,7 @@ namespace ExamenFinalProgramacionWeb2.Migrations
                     b.ToTable("Cliente");
                 });
 
-            modelBuilder.Entity("ExamenFinalProgramacionWeb2.Entidades.Credito", b =>
+            modelBuilder.Entity("ExamenFinalProgramacionWeb2.Core.Entidades.Credito", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -62,7 +62,10 @@ namespace ExamenFinalProgramacionWeb2.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ClienteId")
+                    b.Property<int>("ClienteCi")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Codigo")
                         .HasColumnType("integer");
 
                     b.Property<string>("Estado")
@@ -80,7 +83,7 @@ namespace ExamenFinalProgramacionWeb2.Migrations
                     b.ToTable("Credito");
                 });
 
-            modelBuilder.Entity("ExamenFinalProgramacionWeb2.Entidades.Factura", b =>
+            modelBuilder.Entity("ExamenFinalProgramacionWeb2.Core.Entidades.Factura", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -88,7 +91,10 @@ namespace ExamenFinalProgramacionWeb2.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ClienteId")
+                    b.Property<int>("ClienteCi")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Codigo")
                         .HasColumnType("integer");
 
                     b.Property<string>("Estado")
@@ -109,7 +115,7 @@ namespace ExamenFinalProgramacionWeb2.Migrations
                     b.ToTable("Factura");
                 });
 
-            modelBuilder.Entity("ExamenFinalProgramacionWeb2.Entidades.OrdenCompra", b =>
+            modelBuilder.Entity("ExamenFinalProgramacionWeb2.Core.Entidades.OrdenCompra", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -118,6 +124,9 @@ namespace ExamenFinalProgramacionWeb2.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Cantidad")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Codigo")
                         .HasColumnType("integer");
 
                     b.Property<int>("CostoTotal")
@@ -134,7 +143,7 @@ namespace ExamenFinalProgramacionWeb2.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("ProveedorId")
+                    b.Property<int>("ProveedorCodigo")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -142,7 +151,7 @@ namespace ExamenFinalProgramacionWeb2.Migrations
                     b.ToTable("OrdenCompra");
                 });
 
-            modelBuilder.Entity("ExamenFinalProgramacionWeb2.Entidades.Pago", b =>
+            modelBuilder.Entity("ExamenFinalProgramacionWeb2.Core.Entidades.Pago", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -150,11 +159,14 @@ namespace ExamenFinalProgramacionWeb2.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("Codigo")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Estado")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("FacturaId")
+                    b.Property<int>("FacturaCodigo")
                         .HasColumnType("integer");
 
                     b.Property<DateOnly>("FechaPago")
@@ -168,7 +180,7 @@ namespace ExamenFinalProgramacionWeb2.Migrations
                     b.ToTable("Pago");
                 });
 
-            modelBuilder.Entity("ExamenFinalProgramacionWeb2.Entidades.Proveedor", b =>
+            modelBuilder.Entity("ExamenFinalProgramacionWeb2.Core.Entidades.Proveedor", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -182,6 +194,9 @@ namespace ExamenFinalProgramacionWeb2.Migrations
                     b.Property<string>("Categoria")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("Codigo")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Estado")
                         .IsRequired()

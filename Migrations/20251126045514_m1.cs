@@ -19,7 +19,7 @@ namespace ExamenFinalProgramacionWeb2.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Nombre = table.Column<string>(type: "text", nullable: false),
-                    CI = table.Column<string>(type: "text", nullable: false),
+                    Ci = table.Column<string>(type: "text", nullable: false),
                     Categoria = table.Column<string>(type: "text", nullable: false),
                     Estado = table.Column<string>(type: "text", nullable: false)
                 },
@@ -34,7 +34,8 @@ namespace ExamenFinalProgramacionWeb2.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ClienteId = table.Column<int>(type: "integer", nullable: false),
+                    Codigo = table.Column<int>(type: "integer", nullable: false),
+                    ClienteCi = table.Column<int>(type: "integer", nullable: false),
                     LimiteCredito = table.Column<int>(type: "integer", nullable: false),
                     SaldoUsado = table.Column<int>(type: "integer", nullable: false),
                     Estado = table.Column<string>(type: "text", nullable: false)
@@ -50,7 +51,8 @@ namespace ExamenFinalProgramacionWeb2.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ClienteId = table.Column<int>(type: "integer", nullable: false),
+                    Codigo = table.Column<int>(type: "integer", nullable: false),
+                    ClienteCi = table.Column<int>(type: "integer", nullable: false),
                     Fecha = table.Column<DateOnly>(type: "date", nullable: false),
                     MontoTotal = table.Column<int>(type: "integer", nullable: false),
                     Pagada = table.Column<bool>(type: "boolean", nullable: false),
@@ -67,7 +69,8 @@ namespace ExamenFinalProgramacionWeb2.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ProveedorId = table.Column<int>(type: "integer", nullable: false),
+                    Codigo = table.Column<int>(type: "integer", nullable: false),
+                    ProveedorCodigo = table.Column<int>(type: "integer", nullable: false),
                     Fecha = table.Column<DateOnly>(type: "date", nullable: false),
                     Producto = table.Column<string>(type: "text", nullable: false),
                     Cantidad = table.Column<int>(type: "integer", nullable: false),
@@ -85,7 +88,8 @@ namespace ExamenFinalProgramacionWeb2.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    FacturaId = table.Column<int>(type: "integer", nullable: false),
+                    Codigo = table.Column<int>(type: "integer", nullable: false),
+                    FacturaCodigo = table.Column<int>(type: "integer", nullable: false),
                     FechaPago = table.Column<DateOnly>(type: "date", nullable: false),
                     MontoPagado = table.Column<int>(type: "integer", nullable: false),
                     Estado = table.Column<string>(type: "text", nullable: false)
@@ -101,6 +105,7 @@ namespace ExamenFinalProgramacionWeb2.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Codigo = table.Column<int>(type: "integer", nullable: false),
                     Nombre = table.Column<string>(type: "text", nullable: false),
                     Categoria = table.Column<string>(type: "text", nullable: false),
                     Calificacion = table.Column<float>(type: "real", nullable: false),

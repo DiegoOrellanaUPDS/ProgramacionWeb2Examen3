@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ExamenFinalProgramacionWeb2.Core.Entidades;
 using ExamenFinalProgramacionWeb2.Data;
-using ExamenFinalProgramacionWeb2.Entidades;
 
 namespace ExamenFinalProgramacionWeb2.Controllers
 {
@@ -21,14 +21,14 @@ namespace ExamenFinalProgramacionWeb2.Controllers
             _context = context;
         }
 
-        // GET: api/Creditoes
+        // GET: api/Creditos
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Credito>>> GetCredito()
         {
             return await _context.Credito.ToListAsync();
         }
 
-        // GET: api/Creditoes/5
+        // GET: api/Creditos/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Credito>> GetCredito(int id)
         {
@@ -42,7 +42,7 @@ namespace ExamenFinalProgramacionWeb2.Controllers
             return credito;
         }
 
-        // PUT: api/Creditoes/5
+        // PUT: api/Creditos/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCredito(int id, Credito credito)
@@ -73,7 +73,7 @@ namespace ExamenFinalProgramacionWeb2.Controllers
             return NoContent();
         }
 
-        // POST: api/Creditoes
+        // POST: api/Creditos
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Credito>> PostCredito(Credito credito)
@@ -84,7 +84,7 @@ namespace ExamenFinalProgramacionWeb2.Controllers
             return CreatedAtAction("GetCredito", new { id = credito.Id }, credito);
         }
 
-        // DELETE: api/Creditoes/5
+        // DELETE: api/Creditos/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCredito(int id)
         {

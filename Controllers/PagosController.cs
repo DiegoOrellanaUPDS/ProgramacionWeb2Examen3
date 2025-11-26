@@ -5,30 +5,30 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ExamenFinalProgramacionWeb2.Core.Entidades;
 using ExamenFinalProgramacionWeb2.Data;
-using ExamenFinalProgramacionWeb2.Entidades;
 
 namespace ExamenFinalProgramacionWeb2.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PagoesController : ControllerBase
+    public class PagosController : ControllerBase
     {
         private readonly ExamenFinalProgramacionWeb2Context _context;
 
-        public PagoesController(ExamenFinalProgramacionWeb2Context context)
+        public PagosController(ExamenFinalProgramacionWeb2Context context)
         {
             _context = context;
         }
 
-        // GET: api/Pagoes
+        // GET: api/Pagos
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Pago>>> GetPago()
         {
             return await _context.Pago.ToListAsync();
         }
 
-        // GET: api/Pagoes/5
+        // GET: api/Pagos/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Pago>> GetPago(int id)
         {
@@ -42,7 +42,7 @@ namespace ExamenFinalProgramacionWeb2.Controllers
             return pago;
         }
 
-        // PUT: api/Pagoes/5
+        // PUT: api/Pagos/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPago(int id, Pago pago)
@@ -73,7 +73,7 @@ namespace ExamenFinalProgramacionWeb2.Controllers
             return NoContent();
         }
 
-        // POST: api/Pagoes
+        // POST: api/Pagos
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Pago>> PostPago(Pago pago)
@@ -84,7 +84,7 @@ namespace ExamenFinalProgramacionWeb2.Controllers
             return CreatedAtAction("GetPago", new { id = pago.Id }, pago);
         }
 
-        // DELETE: api/Pagoes/5
+        // DELETE: api/Pagos/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePago(int id)
         {

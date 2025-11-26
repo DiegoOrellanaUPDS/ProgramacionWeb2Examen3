@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ExamenFinalProgramacionWeb2.Core.Entidades;
 using ExamenFinalProgramacionWeb2.Data;
-using ExamenFinalProgramacionWeb2.Entidades;
 
 namespace ExamenFinalProgramacionWeb2.Controllers
 {

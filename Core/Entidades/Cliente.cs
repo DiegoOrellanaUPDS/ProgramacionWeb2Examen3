@@ -1,16 +1,15 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ExamenFinalProgramacionWeb2.Entidades
+namespace ExamenFinalProgramacionWeb2.Core.Entidades
 {
-    public class Proveedor
+    public class Cliente
     {
         [Key]
         public int Id { get; set; }
         public string Nombre { get; set; }
+        public string Ci { get; set; }
         public string Categoria { get; set; }
-        public float Calificacion { get; set; }
         public string Estado { get; set; } = "Activo";
-
     }
 
 }
