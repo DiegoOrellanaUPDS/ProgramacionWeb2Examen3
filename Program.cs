@@ -20,8 +20,8 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    db.Database.EnsureDeleted();
     var db = scope.ServiceProvider.GetRequiredService<ExamenFinalProgramacionWeb2Context>();
+    db.Database.EnsureDeleted();
     db.Database.Migrate();
 }
 
